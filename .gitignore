@@ -1,0 +1,28 @@
+# Diğer proje
+b2b-pharmacy/
+
+# Tasarım/handoff dosyaları (repo dışı)
+design_handoff_ibijuteri 2/
+*.fig
+
+# Büyük data dosyaları
+ebijuteritoptan_products.json
+
+# Görsel kaynaklar (frontend/public içine kopyalandı)
+/i-bijuteri-logo.webp
+/favicon.png
+
+# OS / IDE
+.DS_Store
+.idea/
+.vscode/
+*.log
+
+# Claude
+.claude/
+
+# Playwright çıktıları
+frontend/playwright-report/
+frontend/test-results/
+frontend/blob-report/
+frontend/playwright/.cache/

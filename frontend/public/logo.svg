@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 50" fill="none">
+  <!-- Background pill shape -->
+  <rect x="0" y="0" width="220" height="50" rx="8" fill="none"/>
+
+  <!-- Gem Icon -->
+  <rect x="10" y="15" width="20" height="20" rx="3" fill="#B76E79"/>
+  <path d="M14 22 L20 17 L26 22 L20 33 Z" fill="white" stroke="white" stroke-width="0.5" stroke-linejoin="round"/>
+  <line x1="14" y1="22" x2="26" y2="22" stroke="#B76E79" stroke-width="0.8"/>
+  <line x1="20" y1="17" x2="20" y2="22" stroke="#B76E79" stroke-width="0.8"/>
+
+  <!-- Text: i- -->
+  <text x="40" y="32" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="#2D2D2D">
+    <tspan>i-</tspan>
+  </text>
+
+  <!-- Text: Bijuteri with rose accent -->
+  <text x="58" y="32" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="#B76E79">
+    <tspan>Bijuteri</tspan>
+  </text>
+</svg>
