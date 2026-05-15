@@ -34,7 +34,7 @@ class TopbarSettingsPage extends Page
             'hours_text' => Setting::getValue('topbar.hours_text', 'Hafta içi 09:00 – 18:00'),
             'phone' => Setting::getValue('topbar.phone', '0 542 848 26 46'),
             'seller_link_text' => Setting::getValue('topbar.seller_link_text', 'Nasıl Satıcı Olurum?'),
-            'seller_link_url' => Setting::getValue('topbar.seller_link_url', '/yardim'),
+            'seller_link_url' => Setting::getValue('topbar.seller_link_url', '/sayfalar/yardim'),
             'contact_link_text' => Setting::getValue('topbar.contact_link_text', 'İletişim'),
             'contact_link_url' => Setting::getValue('topbar.contact_link_url', '/iletisim'),
             'announcement_enabled' => (bool) Setting::getValue('topbar.announcement_enabled', false),
@@ -82,9 +82,9 @@ class TopbarSettingsPage extends Page
 
                         Forms\Components\TextInput::make('seller_link_url')
                             ->label('Satıcı linki URL')
-                            ->placeholder('/yardim')
+                            ->placeholder('/sayfalar/yardim')
                             ->maxLength(255)
-                            ->helperText('Dahili sayfa için "/yardim" gibi, dış link için "https://..." kullanın.'),
+                            ->helperText('Dahili sayfa için "/sayfalar/yardim" gibi, dış link için "https://..." kullanın.'),
 
                         Forms\Components\TextInput::make('contact_link_text')
                             ->label('İletişim linki metni')
