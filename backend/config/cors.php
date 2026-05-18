@@ -26,6 +26,8 @@ return [
         'http://127.0.0.1:3000',
         'http://127.0.0.1:3001',
         'http://127.0.0.1:3002',
+        'https://i-bijuteri.com',
+        'https://www.i-bijuteri.com',
     ],
 
     'allowed_origins_patterns' => [],

@@ -30,7 +30,6 @@ import {
     Filter,
     X,
     ChevronRight,
-    Heart,
     Sparkles,
     RefreshCw,
     SlidersHorizontal,
@@ -55,7 +54,6 @@ function RecommendedContent() {
     const [hasMore, setHasMore] = useState(true);
     const [totalProducts, setTotalProducts] = useState(0);
     const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
-    const [refreshKey, setRefreshKey] = useState(0);
     const filtersRef = useRef(0);
 
     const [filters, setFilters] = useState<Filters>({
@@ -103,7 +101,7 @@ function RecommendedContent() {
                 setIsLoadingMore(false);
             }
         }
-    }, [filters, refreshKey]);
+    }, [filters]);
 
     useEffect(() => {
         setCurrentPage(1);
@@ -124,10 +122,10 @@ function RecommendedContent() {
     });
 
     const handleRefresh = () => {
-        setRefreshKey((prev) => prev + 1);
         setCurrentPage(1);
         setProducts([]);
         setHasMore(true);
+        loadProducts(1, false);
     };
 
     const applyFilters = (newFilters: Filters) => {

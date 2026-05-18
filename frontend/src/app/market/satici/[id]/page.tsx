@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { offersApi, Offer, SellerOffersResponse } from '@/lib/api';
+import { offersApi, SellerOffersResponse } from '@/lib/api';
 import { GridProductCard } from '@/components/market/GridProductCard';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -14,143 +13,11 @@ import {
     MapPin,
     Box,
     ArrowLeft,
-    Calendar,
     Tag,
-    ShoppingCart,
     AlertCircle,
-    Loader2,
     ChevronLeft,
     ChevronRight,
 } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
-import { useCartStore } from '@/stores/useCartStore';
-import { toast } from 'sonner';
-
-function formatPrice(price: number): string {
-    return new Intl.NumberFormat('tr-TR', {
-        style: 'currency',
-        currency: 'TRY',
-    }).format(price);
-}
-
-function formatDate(date: string): string {
-    return new Date(date).toLocaleDateString('tr-TR', {
-        year: 'numeric',
-        month: 'short',
-    });
-}
-
-// Offer Card Component
-function OfferCard({ offer }: { offer: Offer }) {
-    const [isAdding, setIsAdding] = useState(false);
-    const { addItem } = useCartStore();
-    const { user } = useAuth();
-
-    // Company users cannot buy
-    const canBuy = !user || !!user.role;
-
-    const handleAddToCart = async () => {
-        if (!canBuy) return;
-
-        setIsAdding(true);
-        try {
-            await addItem(offer.id, 1);
-            toast.success('Sepete eklendi');
-        } catch (error) {
-            toast.error('Sepete eklenemedi');
-        } finally {
-            setIsAdding(false);
-        }
-    };
-
-    const productImage = offer.product?.image_url || offer.product?.image;
-
-    return (
-        <div className="group bg-white dark:bg-charcoal rounded-xl border border-card-border dark:border-slate-700 hover:border-[#D4B896] dark:hover:border-[#D4B896] transition-all duration-300 overflow-hidden hover:shadow-lg">
-            {/* Product Image */}
-            <div className="relative aspect-square bg-surface-bg p-4 flex items-center justify-center">
-                <Link href={`/market/product/${offer.product_id}`} className="absolute inset-0 z-10" />
-                {productImage ? (
-                    <img
-                        src={productImage}
-                        alt={offer.product?.name || 'Ürün'}
-                        className="w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-300"
-                    />
-                ) : (
-                    <Box className="w-16 h-16 text-charcoal-light" />
-                )}
-
-                {/* Stock Badge */}
-                <div className="absolute top-2 right-2 z-20">
-                    <Badge className={cn(
-                        "text-xs",
-                        offer.stock > 10 ? "bg-[#F1E6D0] text-[#B89968]" :
-                            offer.stock > 0 ? "bg-amber-100 text-amber-700" :
-                                "bg-red-100 text-red-700"
-                    )}>
-                        {offer.stock > 0 ? `${offer.stock} adet` : 'Stokta yok'}
-                    </Badge>
-                </div>
-            </div>
-
-            {/* Content */}
-            <div className="p-4">
-                {/* Brand */}
-                {offer.product?.brand && (
-                    <p className="text-xs font-semibold text-charcoal-light uppercase tracking-wide mb-1">
-                        {offer.product.brand}
-                    </p>
-                )}
-
-                {/* Product Name */}
-                <Link
-                    href={`/market/product/${offer.product_id}`}
-                    className="text-sm font-bold text-charcoal dark:text-slate-200 line-clamp-2 h-10 mb-2 hover:text-[#B89968] transition-colors"
-                >
-                    {offer.product?.name || 'Ürün'}
-                </Link>
-
-                {/* Barcode */}
-                <p className="text-xs text-charcoal-light mb-3">
-                    Barkod: {offer.product?.barcode}
-                </p>
-
-                {/* Expiry Date */}
-                <div className="flex items-center gap-1 text-xs text-charcoal-light mb-3">
-                    <Calendar className="w-3 h-3" />
-                    <span>SKT: {formatDate(offer.expiry_date)}</span>
-                </div>
-
-                {/* Price & Add to Cart */}
-                <div className="flex items-center justify-between pt-3 border-t border-card-border">
-                    <div>
-                        <span className="text-lg font-bold text-charcoal">
-                            {formatPrice(offer.price)}
-                        </span>
-                    </div>
-
-                    {canBuy && offer.stock > 0 && (
-                        <Button
-                            size="sm"
-                            onClick={handleAddToCart}
-                            disabled={isAdding}
-                            className="bg-[#B89968] hover:bg-[#8C6F3F]"
-                        >
-                            {isAdding ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : (
-                                <>
-                                    <ShoppingCart className="w-4 h-4 mr-1" />
-                                    Ekle
-                                </>
-                            )}
-                        </Button>
-                    )}
-                </div>
-            </div>
-        </div>
-    );
-}
 
 // Empty State Component
 function EmptyOffers() {
@@ -257,7 +124,7 @@ export default function SellerProfilePage() {
                 setData(response.data);
                 setCurrentPage(page);
             }
-        } catch (err) {
+        } catch {
             setError('Beklenmeyen bir hata oluştu');
         } finally {
             setLoading(false);
@@ -268,7 +135,7 @@ export default function SellerProfilePage() {
         if (sellerId) {
             fetchOffers(1);
         }
-    }, [sellerId]);
+    }, [sellerId]); // eslint-disable-line react-hooks/exhaustive-deps -- fetchOffers is stable, sellerId is the trigger
 
     if (loading && !data) {
         return <LoadingSkeleton />;

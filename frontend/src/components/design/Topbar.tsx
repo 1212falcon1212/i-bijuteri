@@ -14,8 +14,8 @@ const DEFAULTS: TopbarSettings = {
   shipping_text: "Türkiye geneli ücretsiz kargo",
   hours_text: "Hafta içi 09:00 – 18:00",
   phone: "0 542 848 26 46",
-  seller_link_text: "Nasıl Satıcı Olurum?",
-  seller_link_url: "/sayfalar/yardim",
+  seller_link_text: "",
+  seller_link_url: "",
   contact_link_text: "İletişim",
   contact_link_url: "/sayfa/iletisim",
   announcement_enabled: false,
@@ -99,17 +99,8 @@ export default function Topbar({ settings: settingsProp }: TopbarProps = {}) {
           )}
         </div>
 
-        {/* Sağ: linkler + telefon — aralarına dikey ayraç */}
+        {/* Sağ: linkler + telefon */}
         <div className="flex items-center">
-          {settings.seller_link_text && (
-            <Link
-              href={settings.seller_link_url || "/"}
-              className="flex items-center px-6 hover:text-white transition-colors border-r"
-              style={{ borderRightColor: "rgba(232,222,200,0.25)" }}
-            >
-              {settings.seller_link_text}
-            </Link>
-          )}
           {settings.contact_link_text && (
             <Link
               href={settings.contact_link_url || "/"}

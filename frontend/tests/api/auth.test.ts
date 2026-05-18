@@ -1,4 +1,4 @@
-import { describe, it, assert, assertEqual, assertOk, assertStatus, request, loginAs } from './helpers';
+import { describe, it, assert, assertEqual, assertOk, assertStatus, request } from './helpers';
 
 export async function runAuthTests(): Promise<void> {
   let token = '';

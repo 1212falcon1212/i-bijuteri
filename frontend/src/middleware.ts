@@ -1,18 +1,8 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-// Define paths that don't require authentication
-const publicPaths = ['/login', '/register', '/'];
-
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  
-  // Check if path is public
-  const isPublicPath = publicPaths.some(path => pathname === path || pathname.startsWith(path + '/'));
-  
-  // Get token from cookies (we'll set it in client)
-  // For now, we'll handle auth state in client-side
-  // This middleware mainly handles redirects for SSR
   
   // For API routes, let them pass through
   if (pathname.startsWith('/api')) {

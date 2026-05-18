@@ -33,7 +33,6 @@ import {
     SlidersHorizontal,
     Building2,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { useInfiniteScroll } from '@/hooks/use-infinite-scroll';
 
 interface Brand {

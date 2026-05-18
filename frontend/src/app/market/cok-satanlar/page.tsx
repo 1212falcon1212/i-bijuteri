@@ -31,7 +31,6 @@ import {
     X,
     ChevronRight,
     SlidersHorizontal,
-    Award,
     Flame,
 } from 'lucide-react';
 import { useInfiniteScroll } from '@/hooks/use-infinite-scroll';

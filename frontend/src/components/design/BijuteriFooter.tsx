@@ -55,7 +55,6 @@ const FALLBACK_KURUMSAL: FooterLink[] = [
 
 const FALLBACK_YARDIM: FooterLink[] = [
   { label: "Tüm Yardım Konuları", href: "/sayfalar/yardim" },
-  { label: "Nasıl Satıcı Olurum?", href: "/register" },
   { label: "Kargo Bilgileri", href: "/market/kargo-bilgi" },
   { label: "İade Süreci", href: "/sayfa/iade-politikasi" },
 ];

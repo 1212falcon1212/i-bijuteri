@@ -1,13 +1,10 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { supportTicketsApi, SupportTicket, SupportTicketMessage, SupportTicketAttachment, ordersApi, Order } from '@/lib/api';
-import { useAuth } from '@/contexts/AuthContext';
+import { supportTicketsApi, SupportTicket, SupportTicketAttachment, ordersApi, Order } from '@/lib/api';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
-    MessageCircle,
     ChevronLeft,
     Send,
     Clock,
@@ -232,7 +229,7 @@ function TicketList({ onSelectTicket }: { onSelectTicket: (id: number) => void }
 
     useEffect(() => {
         loadTickets();
-    }, [page]);
+    }, [page]); // eslint-disable-line react-hooks/exhaustive-deps -- loadTickets is stable, page is the trigger
 
     const loadTickets = async () => {
         setLoading(true);
@@ -345,7 +342,6 @@ function TicketList({ onSelectTicket }: { onSelectTicket: (id: number) => void }
 
 // --- Ticket Detail (Chat View) ---
 function TicketDetail({ ticketId, onBack }: { ticketId: number; onBack: () => void }) {
-    const { user } = useAuth();
     const [ticket, setTicket] = useState<SupportTicket | null>(null);
     const [loading, setLoading] = useState(true);
     const [newMessage, setNewMessage] = useState('');
@@ -357,7 +353,7 @@ function TicketDetail({ ticketId, onBack }: { ticketId: number; onBack: () => vo
 
     useEffect(() => {
         loadTicket();
-    }, [ticketId]);
+    }, [ticketId]); // eslint-disable-line react-hooks/exhaustive-deps -- loadTicket is stable, ticketId is the trigger
 
     useEffect(() => {
         const el = messagesEndRef.current;

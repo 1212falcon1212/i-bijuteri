@@ -8,6 +8,8 @@ import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import type { CartItem as CartItemType, ValidationIssue } from '@/stores/useCartStore';
 
+const EXPIRY_SOON_THRESHOLD = Date.now() + 90 * 24 * 60 * 60 * 1000;
+
 // Product image component with error handling
 function ProductImage({ src, alt, className }: { src: string | null | undefined; alt: string; className?: string }) {
     const [error, setError] = useState(false);
@@ -95,7 +97,7 @@ export function CartItem({
     };
 
     const isExpiringSoon = mounted && item.offer.expiry_date &&
-        new Date(item.offer.expiry_date) < new Date(Date.now() + 90 * 24 * 60 * 60 * 1000);
+        new Date(item.offer.expiry_date) < new Date(EXPIRY_SOON_THRESHOLD);
 
     const lineTotal = item.price_at_addition * item.quantity;
 

@@ -723,7 +723,7 @@ export function OrderDetailView({
 
     useEffect(() => {
         loadOrderDetail();
-    }, [orderId, isSeller]);
+    }, [orderId, isSeller]); // eslint-disable-line react-hooks/exhaustive-deps -- loadOrderDetail is stable, orderId/isSeller are the triggers
 
     const loadOrderDetail = async () => {
         setIsLoading(true);

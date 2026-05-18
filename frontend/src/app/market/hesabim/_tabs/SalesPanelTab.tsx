@@ -6,8 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
-    BarChart3,
-    ShoppingBag,
     Tag,
     Store,
     Percent,
@@ -176,7 +174,7 @@ export function SalesPanelContent({ subNav }: { subNav: string }) {
             } else if (response.error) {
                 toast.error(response.error);
             }
-        } catch (error) {
+        } catch {
             toast.error('Kampanya oluşturulurken hata oluştu');
         } finally {
             setIsSubmitting(false);
@@ -210,13 +208,9 @@ export function SalesPanelContent({ subNav }: { subNav: string }) {
             } else if (response.error) {
                 toast.error(response.error);
             }
-        } catch (error) {
+        } catch {
             toast.error('Yanit eklenirken hata oluştu');
         }
-    };
-
-    const formatPrice = (price: number) => {
-        return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(price);
     };
 
     const formatDate = (dateStr: string) => {

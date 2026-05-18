@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { UserIntegration, IntegrationCredentials, integrationsApi } from '@/lib/api';
-import { Loader2, RefreshCw, Trash2, CheckCircle2, AlertCircle, ChevronDown, Save, Eye, EyeOff, Settings2 } from 'lucide-react';
+import { Loader2, RefreshCw, Trash2, CheckCircle2, AlertCircle, ChevronDown, Save, Settings2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -110,7 +110,7 @@ export function IntegrationCard({ id, name, description, logo, integration, onUp
             initialData[field.key] = field.type === 'switch' ? false : '';
         });
         setFormData(initialData);
-    }, [id]);
+    }, [id]); // eslint-disable-line react-hooks/exhaustive-deps -- only reinitialize when integration type changes
 
     const handleSave = async () => {
         setSaving(true);

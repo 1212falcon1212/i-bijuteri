@@ -26,7 +26,6 @@ import {
 } from '@/components/ui/sheet';
 import {
     ArrowLeft,
-    Box,
     Filter,
     X,
     ChevronRight,

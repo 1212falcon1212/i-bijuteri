@@ -45,10 +45,6 @@ test.describe('Cart', () => {
       await page.waitForTimeout(2000);
 
       // The MiniCart in header should show a count badge
-      const cartBadge = page.locator('header').locator('[class*="badge"], [class*="bg-"]').filter({
-        hasText: /^[1-9]\d*$/,
-      });
-      const hasBadge = await cartBadge.first().isVisible().catch(() => false);
       // Even without badge, the cart should at least be accessible
       expect(true).toBeTruthy();
     }
@@ -85,11 +81,6 @@ test.describe('Cart', () => {
     await addProductToCart(page);
     await page.goto('/market/sepet', { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(3000);
-
-    // Find plus/minus buttons (Minus and Plus from lucide)
-    const plusButton = page.locator('button').filter({
-      has: page.locator('[class*="lucide-plus"], svg'),
-    });
 
     // The cart page has Plus/Minus buttons for quantity adjustment
     const plusButtons = page.locator('button').filter({ has: page.locator('.lucide-plus') });

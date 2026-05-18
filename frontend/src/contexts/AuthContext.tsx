@@ -44,7 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     checkAuth();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps -- checkAuth is stable, runs once on mount
 
   // Check document status and redirect if needed
   useEffect(() => {
@@ -61,7 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         router.push('/documents');
       }
     }
-  }, [user, isLoading, documentsApproved, pathname, checkingDocuments]);
+  }, [user, isLoading, documentsApproved, pathname, checkingDocuments, router]);
 
   const checkAuth = async () => {
     const token = api.getToken();
@@ -133,7 +133,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     logout();
   }, [logout]);
 
-  const { resetTimer, remainingSeconds, isWarning } = useInactivityTimeout({
+  const { resetTimer, remainingSeconds } = useInactivityTimeout({
     timeoutMs: 30 * 60 * 1000,
     warningMs: 60 * 1000,
     enabled: !!user,

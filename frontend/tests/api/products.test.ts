@@ -1,4 +1,4 @@
-import { describe, it, assert, assertOk, assertType, request } from './helpers';
+import { describe, it, assert, assertOk, request } from './helpers';
 
 let firstProductId: number | null = null;
 

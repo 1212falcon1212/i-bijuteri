@@ -43,7 +43,7 @@ async function getAuthToken(): Promise<{ token: string; user: AuthTokenResponse[
  * Logs in via API, injects token into localStorage before each test.
  */
 export const test = base.extend<{ authedPage: Page }>({
-  authedPage: async ({ page }, use) => {
+  authedPage: async ({ page }, fixtureUse) => {
     const { token, user } = await getAuthToken();
 
     // Navigate to the app origin first so we can set localStorage
@@ -61,7 +61,7 @@ export const test = base.extend<{ authedPage: Page }>({
     // Navigate to market to confirm auth
     await page.goto('/market', { waitUntil: 'domcontentloaded' });
 
-    await use(page);
+    await fixtureUse(page);
   },
 });
 

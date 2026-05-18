@@ -75,7 +75,7 @@ class OrderController extends Controller
             })
             ->with([
                 'order.user:id,business_name,nickname,email,phone,role',
-                'order:id,order_number,payment_status,shipping_address,created_at',
+                'order:id,user_id,order_number,payment_status,shipping_address,created_at',
                 'items.product',
             ]);
 

@@ -440,8 +440,6 @@ function MarketCategoryContent() {
         </aside>
     );
 
-    const totalPages = totalProducts > 0 ? Math.ceil(totalProducts / 12) : 1;
-
     return (
         <>
             {/* Breadcrumb */}

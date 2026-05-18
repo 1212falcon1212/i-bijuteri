@@ -14,6 +14,7 @@ class ProductControllerTest extends TestCase
     use RefreshDatabase;
 
     protected User $user;
+
     protected string $token;
 
     protected function setUp(): void
@@ -28,7 +29,7 @@ class ProductControllerTest extends TestCase
      */
     protected function authHeaders(): array
     {
-        return ['Authorization' => 'Bearer ' . $this->token];
+        return ['Authorization' => 'Bearer '.$this->token];
     }
 
     /**
@@ -188,8 +189,8 @@ class ProductControllerTest extends TestCase
     {
         $category = Category::factory()->create();
         $product = Product::factory()->forCategory($category)->create();
-        $seller1 = User::factory()->seller()->create(['pharmacy_name' => 'Eczane A']);
-        $seller2 = User::factory()->seller()->create(['pharmacy_name' => 'Eczane B']);
+        $seller1 = User::factory()->seller()->create(['business_name' => 'Bijuteri A']);
+        $seller2 = User::factory()->seller()->create(['business_name' => 'Bijuteri B']);
 
         Offer::factory()
             ->forProduct($product)
@@ -403,7 +404,7 @@ class ProductControllerTest extends TestCase
                     'pagination',
                 ]);
         } catch (\Exception $e) {
-            $this->markTestSkipped('Meilisearch is not available: ' . $e->getMessage());
+            $this->markTestSkipped('Meilisearch is not available: '.$e->getMessage());
         }
     }
 
@@ -479,7 +480,7 @@ class ProductControllerTest extends TestCase
         $category = Category::factory()->create();
         $product = Product::factory()->forCategory($category)->create();
         $seller = User::factory()->seller()->create([
-            'pharmacy_name' => 'Test Eczanesi',
+            'business_name' => 'Test Bijuteri',
             'city' => 'Istanbul',
         ]);
 
@@ -495,7 +496,7 @@ class ProductControllerTest extends TestCase
             ->getJson("/api/products/{$product->id}/offers");
 
         $response->assertStatus(200)
-            ->assertJsonPath('offers.0.seller.pharmacy_name', 'Test Eczanesi')
+            ->assertJsonPath('offers.0.seller.business_name', 'Test Bijuteri')
             ->assertJsonPath('offers.0.seller.city', 'Istanbul');
     }
 }

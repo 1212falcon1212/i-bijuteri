@@ -9,6 +9,7 @@ use App\Models\Offer;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
+use App\Models\SubOrder;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -18,6 +19,7 @@ class OrderControllerTest extends TestCase
     use RefreshDatabase;
 
     protected User $user;
+
     protected string $token;
 
     protected function setUp(): void
@@ -32,7 +34,7 @@ class OrderControllerTest extends TestCase
      */
     protected function authHeaders(): array
     {
-        return ['Authorization' => 'Bearer ' . $this->token];
+        return ['Authorization' => 'Bearer '.$this->token];
     }
 
     /**
@@ -41,7 +43,16 @@ class OrderControllerTest extends TestCase
     protected function createOrderWithItems(User $buyer, User $seller, int $itemCount = 1): Order
     {
         $category = Category::factory()->create();
-        $order = Order::factory()->forUser($buyer)->create();
+        $order = Order::factory()->forUser($buyer)->paid()->create();
+        $subOrder = SubOrder::factory()
+            ->forOrder($order)
+            ->forSeller($seller)
+            ->create([
+                'status' => $order->status,
+                'subtotal' => 0,
+                'total_commission' => 0,
+                'total_payout' => 0,
+            ]);
 
         for ($i = 0; $i < $itemCount; $i++) {
             $product = Product::factory()->forCategory($category)->create();
@@ -53,13 +64,23 @@ class OrderControllerTest extends TestCase
                 ->available()
                 ->create();
 
-            OrderItem::factory()
+            $orderItem = OrderItem::factory()
                 ->forOrder($order)
                 ->forOffer($offer)
                 ->forSeller($seller)
                 ->withQuantityAndPrice(2, 100.00)
                 ->create();
+
+            $orderItem->update(['sub_order_id' => $subOrder->id]);
         }
+
+        $subtotal = $order->items()->sum('total_price');
+        $commission = $order->items()->sum('commission_amount');
+        $subOrder->update([
+            'subtotal' => $subtotal,
+            'total_commission' => $commission,
+            'total_payout' => $subtotal - $commission,
+        ]);
 
         return $order->fresh(['items']);
     }
@@ -77,7 +98,7 @@ class OrderControllerTest extends TestCase
             $offer = Offer::factory()
                 ->forProduct($product)
                 ->forSeller($seller)
-                ->withPrice(100.00)
+                ->withPrice(300.00)
                 ->withStock(50)
                 ->available()
                 ->create();
@@ -86,7 +107,7 @@ class OrderControllerTest extends TestCase
                 ->forCart($cart)
                 ->forOffer($offer)
                 ->withQuantity(2)
-                ->withPriceAtAddition(100.00)
+                ->withPriceAtAddition(300.00)
                 ->create();
         }
 
@@ -239,7 +260,7 @@ class OrderControllerTest extends TestCase
 
         $order = $this->createOrderWithItems($buyer, $seller, 2);
 
-        $response = $this->withHeaders(['Authorization' => 'Bearer ' . $sellerToken])
+        $response = $this->withHeaders(['Authorization' => 'Bearer '.$sellerToken])
             ->getJson("/api/orders/{$order->id}");
 
         $response->assertStatus(200)
@@ -250,7 +271,7 @@ class OrderControllerTest extends TestCase
     /**
      * Test buyer cannot view another user's order.
      */
-    public function test_show_returns_404_for_unauthorized_user(): void
+    public function test_show_returns_403_for_unauthorized_user(): void
     {
         $otherUser = User::factory()->create(['is_verified' => true]);
         $seller = User::factory()->seller()->create();
@@ -259,10 +280,7 @@ class OrderControllerTest extends TestCase
         $response = $this->withHeaders($this->authHeaders())
             ->getJson("/api/orders/{$order->id}");
 
-        $response->assertStatus(404)
-            ->assertJson([
-                'message' => 'Sipariş bulunamadı.',
-            ]);
+        $response->assertStatus(403);
     }
 
     /**
@@ -295,7 +313,7 @@ class OrderControllerTest extends TestCase
         $seller = User::factory()->seller()->create();
         $order = $this->createOrderWithItems($otherUser, $seller);
 
-        $response = $this->withHeaders(['Authorization' => 'Bearer ' . $adminToken])
+        $response = $this->withHeaders(['Authorization' => 'Bearer '.$adminToken])
             ->getJson("/api/orders/{$order->id}");
 
         $response->assertStatus(200)
@@ -569,10 +587,7 @@ class OrderControllerTest extends TestCase
         $response = $this->withHeaders($this->authHeaders())
             ->putJson("/api/orders/{$order->id}/cancel");
 
-        $response->assertStatus(422)
-            ->assertJson([
-                'message' => 'Bu sipariş iptal edilemez.',
-            ]);
+        $response->assertStatus(403);
     }
 
     /**
@@ -587,10 +602,7 @@ class OrderControllerTest extends TestCase
         $response = $this->withHeaders($this->authHeaders())
             ->putJson("/api/orders/{$order->id}/cancel");
 
-        $response->assertStatus(422)
-            ->assertJson([
-                'message' => 'Bu sipariş iptal edilemez.',
-            ]);
+        $response->assertStatus(403);
     }
 
     /**
@@ -605,10 +617,7 @@ class OrderControllerTest extends TestCase
         $response = $this->withHeaders($this->authHeaders())
             ->putJson("/api/orders/{$order->id}/cancel");
 
-        $response->assertStatus(404)
-            ->assertJson([
-                'message' => 'Sipariş bulunamadı.',
-            ]);
+        $response->assertStatus(403);
     }
 
     /**
@@ -665,7 +674,7 @@ class OrderControllerTest extends TestCase
         $order = $this->createOrderWithItems($buyer, $seller);
         $order->update(['status' => 'pending']);
 
-        $response = $this->withHeaders(['Authorization' => 'Bearer ' . $sellerToken])
+        $response = $this->withHeaders(['Authorization' => 'Bearer '.$sellerToken])
             ->putJson("/api/orders/{$order->id}/status", [
                 'status' => 'processing',
             ]);
@@ -690,17 +699,18 @@ class OrderControllerTest extends TestCase
 
         $order = $this->createOrderWithItems($buyer, $seller);
         $order->update(['status' => 'processing']);
+        $order->subOrders()->where('seller_id', $seller->id)->update(['status' => 'processing']);
 
-        $response = $this->withHeaders(['Authorization' => 'Bearer ' . $sellerToken])
+        $response = $this->withHeaders(['Authorization' => 'Bearer '.$sellerToken])
             ->putJson("/api/orders/{$order->id}/status", [
                 'status' => 'shipped',
             ]);
 
         $response->assertStatus(200);
 
-        $order->refresh();
-        $this->assertEquals('shipped', $order->status);
-        $this->assertNotNull($order->shipped_at);
+        $subOrder = $order->subOrders()->where('seller_id', $seller->id)->first();
+        $this->assertEquals('shipped', $subOrder->status);
+        $this->assertNotNull($subOrder->shipped_at);
     }
 
     /**
@@ -714,17 +724,21 @@ class OrderControllerTest extends TestCase
 
         $order = $this->createOrderWithItems($buyer, $seller);
         $order->update(['status' => 'shipped', 'shipped_at' => now()]);
+        $order->subOrders()->where('seller_id', $seller->id)->update([
+            'status' => 'shipped',
+            'shipped_at' => now(),
+        ]);
 
-        $response = $this->withHeaders(['Authorization' => 'Bearer ' . $sellerToken])
+        $response = $this->withHeaders(['Authorization' => 'Bearer '.$sellerToken])
             ->putJson("/api/orders/{$order->id}/status", [
                 'status' => 'delivered',
             ]);
 
         $response->assertStatus(200);
 
-        $order->refresh();
-        $this->assertEquals('delivered', $order->status);
-        $this->assertNotNull($order->delivered_at);
+        $subOrder = $order->subOrders()->where('seller_id', $seller->id)->first();
+        $this->assertEquals('delivered', $subOrder->status);
+        $this->assertNotNull($subOrder->delivered_at);
     }
 
     /**
@@ -740,7 +754,7 @@ class OrderControllerTest extends TestCase
         $order->update(['status' => 'pending']);
 
         // Try to skip directly to shipped (should fail)
-        $response = $this->withHeaders(['Authorization' => 'Bearer ' . $sellerToken])
+        $response = $this->withHeaders(['Authorization' => 'Bearer '.$sellerToken])
             ->putJson("/api/orders/{$order->id}/status", [
                 'status' => 'shipped',
             ]);
@@ -762,7 +776,7 @@ class OrderControllerTest extends TestCase
 
         $order = $this->createOrderWithItems($buyer, $seller);
 
-        $response = $this->withHeaders(['Authorization' => 'Bearer ' . $sellerToken])
+        $response = $this->withHeaders(['Authorization' => 'Bearer '.$sellerToken])
             ->putJson("/api/orders/{$order->id}/status", [
                 'status' => 'invalid_status',
             ]);
@@ -783,15 +797,12 @@ class OrderControllerTest extends TestCase
         // Buyer trying to update status
         $buyerToken = $buyer->createToken('test-token')->plainTextToken;
 
-        $response = $this->withHeaders(['Authorization' => 'Bearer ' . $buyerToken])
+        $response = $this->withHeaders(['Authorization' => 'Bearer '.$buyerToken])
             ->putJson("/api/orders/{$order->id}/status", [
                 'status' => 'processing',
             ]);
 
-        $response->assertStatus(403)
-            ->assertJson([
-                'message' => 'Bu işlem için yetkiniz yok.',
-            ]);
+        $response->assertStatus(403);
     }
 
     /**
@@ -809,10 +820,7 @@ class OrderControllerTest extends TestCase
                 'status' => 'processing',
             ]);
 
-        $response->assertStatus(403)
-            ->assertJson([
-                'message' => 'Bu işlem için yetkiniz yok.',
-            ]);
+        $response->assertStatus(403);
     }
 
     /**
@@ -832,7 +840,7 @@ class OrderControllerTest extends TestCase
         $order = $this->createOrderWithItems($buyer, $seller);
         $order->update(['status' => 'pending']);
 
-        $response = $this->withHeaders(['Authorization' => 'Bearer ' . $adminToken])
+        $response = $this->withHeaders(['Authorization' => 'Bearer '.$adminToken])
             ->putJson("/api/orders/{$order->id}/status", [
                 'status' => 'processing',
             ]);
@@ -851,7 +859,7 @@ class OrderControllerTest extends TestCase
         $seller = User::factory()->seller()->create();
         $sellerToken = $seller->createToken('test-token')->plainTextToken;
 
-        $response = $this->withHeaders(['Authorization' => 'Bearer ' . $sellerToken])
+        $response = $this->withHeaders(['Authorization' => 'Bearer '.$sellerToken])
             ->putJson('/api/orders/99999/status', [
                 'status' => 'processing',
             ]);
@@ -877,7 +885,7 @@ class OrderControllerTest extends TestCase
         $buyer = User::factory()->create(['is_verified' => true]);
         $this->createOrderWithItems($buyer, $seller, 2);
 
-        $response = $this->withHeaders(['Authorization' => 'Bearer ' . $sellerToken])
+        $response = $this->withHeaders(['Authorization' => 'Bearer '.$sellerToken])
             ->getJson('/api/orders/seller');
 
         $response->assertStatus(200)
@@ -915,19 +923,41 @@ class OrderControllerTest extends TestCase
 
         // Create order with items from both sellers
         $category = Category::factory()->create();
-        $order = Order::factory()->forUser($buyer)->create();
+        $order = Order::factory()->forUser($buyer)->paid()->create();
+
+        $subOrder1 = SubOrder::factory()
+            ->forOrder($order)
+            ->forSeller($seller1)
+            ->create([
+                'status' => 'confirmed',
+                'subtotal' => 0,
+                'total_commission' => 0,
+                'total_payout' => 0,
+            ]);
+
+        $subOrder2 = SubOrder::factory()
+            ->forOrder($order)
+            ->forSeller($seller2)
+            ->create([
+                'status' => 'confirmed',
+                'subtotal' => 0,
+                'total_commission' => 0,
+                'total_payout' => 0,
+            ]);
 
         // Items for seller1
         $product1 = Product::factory()->forCategory($category)->create();
         $offer1 = Offer::factory()->forProduct($product1)->forSeller($seller1)->available()->create();
-        OrderItem::factory()->forOrder($order)->forOffer($offer1)->forSeller($seller1)->create();
+        $item1 = OrderItem::factory()->forOrder($order)->forOffer($offer1)->forSeller($seller1)->create();
+        $item1->update(['sub_order_id' => $subOrder1->id]);
 
         // Items for seller2
         $product2 = Product::factory()->forCategory($category)->create();
         $offer2 = Offer::factory()->forProduct($product2)->forSeller($seller2)->available()->create();
-        OrderItem::factory()->forOrder($order)->forOffer($offer2)->forSeller($seller2)->create();
+        $item2 = OrderItem::factory()->forOrder($order)->forOffer($offer2)->forSeller($seller2)->create();
+        $item2->update(['sub_order_id' => $subOrder2->id]);
 
-        $response = $this->withHeaders(['Authorization' => 'Bearer ' . $seller1Token])
+        $response = $this->withHeaders(['Authorization' => 'Bearer '.$seller1Token])
             ->getJson('/api/orders/seller');
 
         $response->assertStatus(200);
@@ -950,11 +980,13 @@ class OrderControllerTest extends TestCase
         // Create orders with different statuses
         $pendingOrder = $this->createOrderWithItems($buyer, $seller);
         $pendingOrder->update(['status' => 'pending']);
+        $pendingOrder->subOrders()->where('seller_id', $seller->id)->update(['status' => 'pending']);
 
         $shippedOrder = $this->createOrderWithItems($buyer, $seller);
         $shippedOrder->update(['status' => 'shipped']);
+        $shippedOrder->subOrders()->where('seller_id', $seller->id)->update(['status' => 'shipped']);
 
-        $response = $this->withHeaders(['Authorization' => 'Bearer ' . $sellerToken])
+        $response = $this->withHeaders(['Authorization' => 'Bearer '.$sellerToken])
             ->getJson('/api/orders/seller?status=pending');
 
         $response->assertStatus(200);
@@ -972,7 +1004,7 @@ class OrderControllerTest extends TestCase
         $seller = User::factory()->seller()->create();
         $sellerToken = $seller->createToken('test-token')->plainTextToken;
 
-        $response = $this->withHeaders(['Authorization' => 'Bearer ' . $sellerToken])
+        $response = $this->withHeaders(['Authorization' => 'Bearer '.$sellerToken])
             ->getJson('/api/orders/seller');
 
         $response->assertStatus(200)
@@ -991,18 +1023,58 @@ class OrderControllerTest extends TestCase
 
         $buyer = User::factory()->create([
             'is_verified' => true,
-            'pharmacy_name' => 'Test Eczanesi',
+            'business_name' => 'Test Bijuteri',
             'email' => 'buyer@test.com',
         ]);
 
-        $this->createOrderWithItems($buyer, $seller);
+        // Create order with confirmed sub-order directly
+        $category = Category::factory()->create();
+        $order = Order::factory()->forUser($buyer)->paid()->create([
+            'status' => 'confirmed',
+        ]);
 
-        $response = $this->withHeaders(['Authorization' => 'Bearer ' . $sellerToken])
+        $subOrder = SubOrder::factory()
+            ->forOrder($order)
+            ->forSeller($seller)
+            ->create([
+                'status' => 'confirmed',
+                'subtotal' => 0,
+                'total_commission' => 0,
+                'total_payout' => 0,
+            ]);
+
+        $product = Product::factory()->forCategory($category)->create();
+        $offer = Offer::factory()
+            ->forProduct($product)
+            ->forSeller($seller)
+            ->withPrice(100.00)
+            ->withStock(50)
+            ->available()
+            ->create();
+
+        $orderItem = OrderItem::factory()
+            ->forOrder($order)
+            ->forOffer($offer)
+            ->forSeller($seller)
+            ->withQuantityAndPrice(2, 100.00)
+            ->create();
+        $orderItem->update(['sub_order_id' => $subOrder->id]);
+
+        $response = $this->withHeaders(['Authorization' => 'Bearer '.$sellerToken])
             ->getJson('/api/orders/seller');
 
-        $response->assertStatus(200)
-            ->assertJsonPath('orders.0.buyer.pharmacy_name', 'Test Eczanesi')
-            ->assertJsonPath('orders.0.buyer.email', 'buyer@test.com');
+        $response->assertStatus(200);
+
+        $orders = $response->json('orders');
+        $this->assertNotEmpty($orders);
+        $this->assertEquals('confirmed', $orders[0]['status']);
+
+        // Buyer info should be present for non-pending orders
+        $buyerData = $orders[0]['buyer'];
+        $this->assertIsArray($buyerData);
+        $this->assertArrayHasKey('business_name', $buyerData);
+        $this->assertEquals('Test Bijuteri', $buyerData['business_name']);
+        $this->assertEquals('buyer@test.com', $buyerData['email']);
     }
 
     /**
@@ -1019,7 +1091,7 @@ class OrderControllerTest extends TestCase
             $this->createOrderWithItems($buyer, $seller);
         }
 
-        $response = $this->withHeaders(['Authorization' => 'Bearer ' . $sellerToken])
+        $response = $this->withHeaders(['Authorization' => 'Bearer '.$sellerToken])
             ->getJson('/api/orders/seller?per_page=10');
 
         $response->assertStatus(200)
@@ -1095,8 +1167,8 @@ class OrderControllerTest extends TestCase
         $response->assertStatus(201);
 
         $orderNumber = $response->json('order_number');
-        $this->assertStringStartsWith('EPZ', $orderNumber);
-        $this->assertMatchesRegularExpression('/^EPZ\d{6}\d{4}[A-Z0-9]{4}$/', $orderNumber);
+        $this->assertStringStartsWith('IBJ', $orderNumber);
+        $this->assertMatchesRegularExpression('/^IBJ\d{6}\d{4}[A-Z0-9]{4}$/', $orderNumber);
     }
 
     /**

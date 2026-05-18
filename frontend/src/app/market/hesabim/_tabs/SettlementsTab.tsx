@@ -8,7 +8,6 @@ import {
   SettlementDetailsResponse,
 } from '@/lib/api';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Badge } from '@/components/ui/badge';
 import {
   Wallet,
   Clock,
@@ -352,7 +351,7 @@ function DetailView({ items }: { items: SettlementDetailsResponse['details'] }) 
               </tr>
             </thead>
             <tbody>
-              {items.map((order, i) => (
+              {items.map((order) => (
                 <Fragment key={order.order_number}>
                   <tr
                     className={cn(

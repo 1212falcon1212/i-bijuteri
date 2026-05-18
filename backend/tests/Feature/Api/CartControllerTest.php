@@ -16,6 +16,7 @@ class CartControllerTest extends TestCase
     use RefreshDatabase;
 
     protected User $user;
+
     protected string $token;
 
     protected function setUp(): void
@@ -30,7 +31,7 @@ class CartControllerTest extends TestCase
      */
     protected function authHeaders(): array
     {
-        return ['Authorization' => 'Bearer ' . $this->token];
+        return ['Authorization' => 'Bearer '.$this->token];
     }
 
     /**
@@ -109,7 +110,7 @@ class CartControllerTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJson([
-                'message' => 'Urun sepete eklendi.',
+                'message' => 'Ürün sepete eklendi.',
             ])
             ->assertJsonStructure([
                 'item',

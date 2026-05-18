@@ -1,4 +1,6 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+import type { WishlistItem } from '@/types/wishlist';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8004/api';
 
 interface ApiResponse<T> {
   data?: T;
@@ -113,7 +115,7 @@ class ApiClient {
         data,
         status: response.status,
       };
-    } catch (error) {
+    } catch {
       return {
         error: 'Sunucuya bağlanılamadı',
         status: 500,
@@ -192,7 +194,7 @@ class ApiClient {
       const blob = await response.blob();
       const contentType = response.headers.get('content-type') || 'application/octet-stream';
       return { blob, contentType };
-    } catch (error) {
+    } catch {
       return { error: 'Sunucuya bağlanılamadı' };
     }
   }
@@ -247,7 +249,7 @@ class ApiClient {
         data,
         status: response.status,
       };
-    } catch (error) {
+    } catch {
       return {
         error: 'Sunucuya bağlanılamadı',
         status: 500,
@@ -1331,7 +1333,7 @@ export interface UserIntegration {
 export const integrationsApi = {
   getAll: () => api.get<{ data: UserIntegration[] }>('/settings/integrations'),
 
-  save: (data: { erp_type: string; api_key: string; api_secret: string; app_id?: string; extra_params?: Record<string, any> }) =>
+  save: (data: { erp_type: string; api_key: string; api_secret: string; app_id?: string; extra_params?: Record<string, unknown> }) =>
     api.post<{ message: string; data: UserIntegration }>('/settings/integrations', data),
 
   sync: (erpType: string) => api.post<{ message: string }>('/settings/integrations/' + erpType + '/sync'),
@@ -1377,8 +1379,14 @@ export const userNotificationsApi = {
     api.post<{ message: string }>('/notifications/read-all'),
 };
 
+export interface WishlistResponse {
+  items?: WishlistItem[];
+  wishlist?: WishlistItem[];
+  data?: WishlistItem[];
+}
+
 export const wishlistApi = {
-  getAll: () => api.get<any>('/wishlist'), // TODO: Define type
+  getAll: () => api.get<WishlistResponse>('/wishlist'),
   toggle: (productId: number, targetPrice?: number) =>
     api.post<{ message: string; in_wishlist: boolean }>('/wishlist/toggle', { product_id: productId, target_price: targetPrice }),
 };
@@ -1427,7 +1435,7 @@ export interface HomepageSection {
   title: string;
   subtitle?: string;
   type: string;
-  settings?: Record<string, any>;
+  settings?: Record<string, unknown>;
   products: HomepageSectionProduct[];
 }
 
@@ -1862,7 +1870,7 @@ export interface Invoice {
   buyer_name?: string;
   seller_info?: Record<string, string>;
   buyer_info?: Record<string, string>;
-  items?: Array<Record<string, any>>;
+  items?: Array<Record<string, unknown>>;
   erp_status: 'pending' | 'synced' | 'failed';
   erp_provider?: string;
   erp_invoice_id?: string;

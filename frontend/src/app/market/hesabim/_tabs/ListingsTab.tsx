@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { offersApi, Offer, CreateOfferData, UpdateOfferData, productsApi, Product } from '@/lib/api';
 import { Button } from '@/components/ui/button';
@@ -12,7 +11,6 @@ import {
     Box,
     Plus,
     Search,
-    Filter,
     Eye,
     Edit,
     CheckCircle2,
@@ -33,7 +31,6 @@ import {
     Dialog,
     DialogContent,
     DialogDescription,
-    DialogFooter,
     DialogHeader,
     DialogTitle,
     DialogTrigger,
@@ -209,7 +206,6 @@ const STATUS_FILTERS = [
 
 // Listings Content
 export function ListingsContent({ subNav }: { subNav: string }) {
-    const router = useRouter();
     const [offers, setOffers] = useState<Offer[]>([]);
     const [loading, setLoading] = useState(true);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -232,7 +228,7 @@ export function ListingsContent({ subNav }: { subNav: string }) {
     // Load offers on mount and when subNav changes
     useEffect(() => {
         loadOffers();
-    }, [subNav]);
+    }, [subNav]); // eslint-disable-line react-hooks/exhaustive-deps -- loadOffers is stable, subNav is the trigger
 
     const loadOffers = async () => {
         setLoading(true);
@@ -360,7 +356,7 @@ export function ListingsContent({ subNav }: { subNav: string }) {
                     toast.error(response.error);
                 }
             }
-        } catch (error) {
+        } catch {
             toast.error(editingOffer ? 'Ilan guncellenirken hata olustu' : 'Ilan olusturulurken hata olustu');
         } finally {
             setIsSubmitting(false);
@@ -389,7 +385,7 @@ export function ListingsContent({ subNav }: { subNav: string }) {
             await offersApi.delete(offerId);
             toast.success('Ilan silindi');
             loadOffers();
-        } catch (error) {
+        } catch {
             toast.error('Ilan silinirken hata olustu');
         }
     };

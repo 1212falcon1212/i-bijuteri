@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Playfair_Display, Inter } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/components/ThemeProvider";
@@ -10,14 +10,6 @@ const inter = Inter({
   variable: "--font-body-loaded",
   subsets: ["latin"],
   weight: ["300", "400", "500", "600"],
-  display: "swap",
-});
-
-const playfair = Playfair_Display({
-  variable: "--font-display-loaded",
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  style: ["normal", "italic"],
   display: "swap",
 });
 
@@ -97,7 +89,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
       </head>
-      <body className={`${inter.variable} ${playfair.variable} font-sans antialiased overflow-x-hidden bg-[var(--bg)] text-[var(--ink)]`}>
+      <body className={`${inter.variable} font-sans antialiased overflow-x-hidden bg-[var(--bg)] text-[var(--ink)]`}>
         <ThemeProvider attribute="class" defaultTheme="light" forcedTheme="light" enableSystem={false} storageKey="frontend-theme">
           <AuthProvider>
             <WebVitals />

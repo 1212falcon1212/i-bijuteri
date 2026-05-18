@@ -12,9 +12,6 @@ test.describe('Search', () => {
 
     // Either search preview dropdown appears or we can submit
     // The search preview shows up after 300ms debounce for 3+ chars
-    // Check if preview results appear (links to product pages in the dropdown)
-    const previewResults = page.locator('[data-search-dropdown] a, [class*="search"] a[href*="/market/product/"]');
-    const hasPreview = await previewResults.first().isVisible({ timeout: 5000 }).catch(() => false);
 
     // Submit the search form
     await searchInput.press('Enter');

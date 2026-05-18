@@ -5,7 +5,6 @@ import Link from 'next/link';
 import {
   Truck,
   ShieldCheck,
-  CreditCard,
   Sparkles,
   ArrowRight,
   ArrowUpRight,
@@ -242,9 +241,11 @@ function TrustStrip({ items }: { items: MarketHomeContent['trust_strip'] }) {
 function CategoryShowcase({
   categories,
   copy,
+  isLoading,
 }: {
   categories: CategoryItem[];
   copy: MarketHomeContent['categories_section'];
+  isLoading: boolean;
 }) {
   const items = categories.slice(0, 6);
   return (
@@ -268,7 +269,7 @@ function CategoryShowcase({
         </div>
       </div>
       <div className="grid">
-        {items.length === 0
+        {items.length === 0 && isLoading
           ? Array(6)
               .fill(0)
               .map((_, i) => (
@@ -279,7 +280,7 @@ function CategoryShowcase({
                   </div>
                 </div>
               ))
-          : items.map((cat) => (
+          : items.length > 0 ? items.map((cat) => (
               <Link
                 key={cat.id}
                 href={`/market/category/${cat.full_slug || cat.slug}`}
@@ -296,7 +297,11 @@ function CategoryShowcase({
                   <span className="arrow">→</span>
                 </div>
               </Link>
-            ))}
+            )) : (
+              <div className="col-span-full rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6 text-sm text-[var(--muted)]">
+                Şu anda gösterilecek kategori bulunamadı.
+              </div>
+            )}
       </div>
     </section>
   );
@@ -348,10 +353,12 @@ function FeaturedProducts({
   products,
   categories,
   copy,
+  isLoading,
 }: {
   products: Product[];
   categories: CategoryItem[];
   copy: MarketHomeContent['featured_products'];
+  isLoading: boolean;
 }) {
   const [activeTab, setActiveTab] = useState<string>('all');
   const [filtered, setFiltered] = useState<Product[]>(products);
@@ -405,7 +412,7 @@ function FeaturedProducts({
         </div>
       </div>
       <div className="grid">
-        {loading
+        {loading || isLoading
           ? Array(8)
               .fill(0)
               .map((_, i) => (
@@ -418,7 +425,11 @@ function FeaturedProducts({
                   </div>
                 </div>
               ))
-          : filtered.slice(0, 8).map((p) => <ProductCard key={p.id} product={p} />)}
+          : filtered.length > 0 ? filtered.slice(0, 8).map((p) => <ProductCard key={p.id} product={p} />) : (
+              <div className="col-span-full rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6 text-sm text-[var(--muted)]">
+                Şu anda gösterilecek ürün bulunamadı.
+              </div>
+            )}
       </div>
     </section>
   );
@@ -503,12 +514,15 @@ export function MarketHomeClient() {
   const [heroImage, setHeroImage] = useState<string | undefined>();
   const [bannerImage, setBannerImage] = useState<string | undefined>();
   const [content, setContent] = useState<MarketHomeContent>(DEFAULT_CONTENT);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
 
     const load = async () => {
       try {
+        setLoadError(null);
         const [homepage, productsRes] = await Promise.all([
           cmsApi.getHomepage(),
           productsApi.getAll({ per_page: 8, sort_by: 'popular' }),
@@ -528,6 +542,13 @@ export function MarketHomeClient() {
         if (productsRes.data?.products) setProducts(productsRes.data.products);
       } catch (e) {
         console.error('Homepage data load failed:', e);
+        if (!cancelled) {
+          setLoadError('Pazaryeri verileri yüklenemedi. Varsayılan içerik gösteriliyor.');
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
       }
     };
     load();
@@ -538,14 +559,20 @@ export function MarketHomeClient() {
 
   return (
     <>
+      {loadError && (
+        <div className="mx-auto mt-4 max-w-[1180px] rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          {loadError}
+        </div>
+      )}
       <HeroSection heroImage={heroImage} hero={content.hero} />
       <TrustStrip items={content.trust_strip} />
-      <CategoryShowcase categories={categories} copy={content.categories_section} />
+      <CategoryShowcase categories={categories} copy={content.categories_section} isLoading={isLoading} />
       <EditorialBanner image={bannerImage} copy={content.editorial_banner} />
       <FeaturedProducts
         products={products}
         categories={categories}
         copy={content.featured_products}
+        isLoading={isLoading}
       />
       <SellersSpotlight copy={content.sellers_section} />
       <CategorySplit copy={content.cta_split} />

@@ -2,15 +2,16 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, Star } from "lucide-react";
+import { ArrowRight, Gem } from "lucide-react";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { ProductCard } from "./ProductCard";
 import { GridProductCard } from "./GridProductCard";
 import { cn } from "@/lib/utils";
+import type { Product } from "@/lib/api";
 
 interface ProductCarouselProps {
     title: string;
-    products: any[];
+    products: Product[];
     linkUrl?: string;
 }
 
@@ -67,15 +68,12 @@ export function ProductGrid({
     title,
     products,
     linkUrl,
-    icon,
     columns = 5,
     rows = 2,
-    showRanking = false,
 }: {
     title: string;
-    products: any[];
+    products: Product[];
     linkUrl?: string;
-    icon?: React.ReactNode;
     columns?: 2 | 3 | 4 | 5 | 6;
     rows?: 1 | 2 | 3 | 4 | 5;
     showRanking?: boolean;
@@ -142,7 +140,7 @@ export function ProductGrid({
                                             className="object-contain p-4 group-hover:scale-105 transition-transform duration-150"
                                         />
                                     ) : (
-                                        <div className="text-6xl opacity-30">💊</div>
+                                        <Gem className="h-16 w-16 text-[#D4B896]/50" />
                                     )}
                                 </div>
 
@@ -187,7 +185,7 @@ export function ProductScrollList({
     size = "md",
 }: {
     title: string;
-    products: any[];
+    products: Product[];
     linkUrl?: string;
     size?: "sm" | "md" | "lg";
 }) {
@@ -244,7 +242,7 @@ export function ProductScrollList({
                                     />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center text-3xl opacity-50">
-                                        💊
+                                        <Gem className="h-10 w-10 text-[#D4B896]/50" />
                                     </div>
                                 )}
                             </div>
@@ -277,7 +275,7 @@ export function FeaturedProducts({
     linkUrl,
 }: {
     title?: string;
-    products: any[];
+    products: Product[];
     linkUrl?: string;
 }) {
     if (!products || products.length === 0) return null;
@@ -326,8 +324,8 @@ export function FeaturedProducts({
                                     className="object-contain p-4 group-hover:scale-105 transition-transform duration-150"
                                 />
                             ) : (
-                                <div className="w-full h-full flex items-center justify-center text-6xl opacity-50">
-                                    💊
+                                <div className="w-full h-full flex items-center justify-center">
+                                    <Gem className="h-16 w-16 text-[#D4B896]/50" />
                                 </div>
                             )}
                         </div>

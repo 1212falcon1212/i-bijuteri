@@ -10,6 +10,7 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
 use App\Services\CartService;
+use App\Services\FeeCalculationService;
 use App\Services\OrderService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -19,13 +20,17 @@ class OrderServiceTest extends TestCase
     use RefreshDatabase;
 
     protected OrderService $orderService;
+
     protected CartService $cartService;
+
+    protected FeeCalculationService $feeCalculationService;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->cartService = new CartService();
-        $this->orderService = new OrderService($this->cartService);
+        $this->cartService = new CartService;
+        $this->feeCalculationService = new FeeCalculationService;
+        $this->orderService = new OrderService($this->cartService, $this->feeCalculationService);
     }
 
     /**
@@ -222,10 +227,10 @@ class OrderServiceTest extends TestCase
     {
         $orderNumber = $this->orderService->generateOrderNumber();
 
-        // Format: EPZ + YYMMDD + 4 digit sequence + 4 random chars
-        // Example: EPZ2401150001ABCD
-        $this->assertMatchesRegularExpression('/^EPZ\d{6}\d{4}[A-Z0-9]{4}$/', $orderNumber);
-        $this->assertStringStartsWith('EPZ', $orderNumber);
+        // Format: IBJ + YYMMDD + 4 digit sequence + 4 random chars
+        // Example: IBJ2401150001ABCD
+        $this->assertMatchesRegularExpression('/^IBJ\d{6}\d{4}[A-Z0-9]{4}$/', $orderNumber);
+        $this->assertStringStartsWith('IBJ', $orderNumber);
         $this->assertEquals(17, strlen($orderNumber));
     }
 

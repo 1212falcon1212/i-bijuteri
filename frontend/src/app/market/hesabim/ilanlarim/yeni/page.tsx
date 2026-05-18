@@ -6,9 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { offersApi, productsApi, Product, CreateOfferData } from '@/lib/api';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Skeleton } from '@/components/ui/skeleton';
 import { BarcodeScanner } from '@/components/mobile/BarcodeScanner';
 import { toast } from 'sonner';
 import {

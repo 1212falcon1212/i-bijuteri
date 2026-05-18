@@ -19,7 +19,6 @@ test.describe('Mobile Responsive', () => {
     await page.goto('/market');
     await page.waitForLoadState('networkidle');
     // Desktop nav should be hidden, mobile menu trigger should exist
-    const mobileMenuBtn = page.locator('button').filter({ has: page.locator('[class*="Menu"], [class*="menu"]') }).first();
     // Or look for Sheet trigger
     const hasHamburger = await page.locator('[data-state]').count() > 0 ||
                           await page.locator('button:has(svg)').first().isVisible();
@@ -31,7 +30,6 @@ test.describe('Mobile Responsive', () => {
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(2000);
     // Filter sidebar should be hidden on mobile
-    const sidebar = page.locator('aside.hidden');
     // Products should be visible
     const products = page.locator('[class*="grid"]').first();
     await expect(products).toBeVisible();

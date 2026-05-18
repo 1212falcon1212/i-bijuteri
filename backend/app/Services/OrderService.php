@@ -79,6 +79,13 @@ class OrderService
                     'quantity' => $quantity,
                     'unit_price' => $unitPrice,
                     'total_price' => $totalPrice,
+                    'commission_rate' => 0,
+                    'commission_amount' => 0,
+                    'marketplace_fee' => 0,
+                    'withholding_tax' => 0,
+                    'shipping_cost_share' => 0,
+                    'net_seller_amount' => $totalPrice,
+                    'seller_payout_amount' => $totalPrice,
                 ];
 
                 if (! $item->offer->decreaseStock($quantity)) {

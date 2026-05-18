@@ -76,7 +76,7 @@ function mergeContent(data: DeepPartial<LandingContent>): LandingContent {
 }
 
 async function fetchLandingContent(): Promise<LandingContent> {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api";
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8004/api";
   try {
     const res = await fetch(`${apiUrl}/landing-content`, {
       next: { revalidate: 300 },

@@ -31,7 +31,7 @@ use Illuminate\Support\Facades\Route;
 | API Routes
 |--------------------------------------------------------------------------
 |
-| B2B Pharmacy API Routes
+| B2B Marketplace API Routes
 | All routes are prefixed with /api
 |
 */

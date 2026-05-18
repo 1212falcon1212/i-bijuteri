@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { toast } from 'sonner';
-import { ChevronRight, Plus, Check, MapPin, Truck, CreditCard, Loader2, X, Tag, Shield, ChevronLeft, Package } from 'lucide-react';
+import { ChevronRight, Plus, MapPin, Truck, CreditCard, Loader2, X, Tag, Shield, ChevronLeft, Package } from 'lucide-react';
 import {
     ordersApi,
     CreateOrderData,

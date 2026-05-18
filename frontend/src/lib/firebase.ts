@@ -1,6 +1,18 @@
-// @ts-nocheck — Firebase SDK not yet installed. Run `npm install firebase` to activate.
-import { initializeApp, getApps } from 'firebase/app';
-import { getMessaging, getToken, onMessage } from 'firebase/messaging';
+type FirebaseApp = unknown;
+type Messaging = unknown;
+type MessagePayload = unknown;
+type Unsubscribe = () => void;
+
+interface FirebaseAppModule {
+  initializeApp: (config: Record<string, string>) => FirebaseApp;
+  getApps: () => FirebaseApp[];
+}
+
+interface FirebaseMessagingModule {
+  getMessaging: (app: FirebaseApp) => Messaging;
+  getToken: (messaging: Messaging, options: { vapidKey?: string }) => Promise<string>;
+  onMessage: (messaging: Messaging, callback: (payload: MessagePayload) => void) => Unsubscribe;
+}
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || '',
@@ -9,7 +21,27 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || '',
 };
 
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+async function loadFirebaseModules(): Promise<{
+  appModule: FirebaseAppModule;
+  messagingModule: FirebaseMessagingModule;
+} | null> {
+  try {
+    const dynamicImport = new Function('specifier', 'return import(specifier)') as <T>(specifier: string) => Promise<T>;
+    const [appModule, messagingModule] = await Promise.all([
+      dynamicImport<FirebaseAppModule>('firebase/app'),
+      dynamicImport<FirebaseMessagingModule>('firebase/messaging'),
+    ]);
+
+    return { appModule, messagingModule };
+  } catch {
+    return null;
+  }
+}
+
+function resolveApp(appModule: FirebaseAppModule): FirebaseApp {
+  const apps = appModule.getApps();
+  return apps.length === 0 ? appModule.initializeApp(firebaseConfig) : apps[0];
+}
 
 export async function requestNotificationPermission(): Promise<string | null> {
   try {
@@ -18,8 +50,12 @@ export async function requestNotificationPermission(): Promise<string | null> {
     const permission = await Notification.requestPermission();
     if (permission !== 'granted') return null;
 
-    const messaging = getMessaging(app);
-    const token = await getToken(messaging, {
+    const modules = await loadFirebaseModules();
+    if (!modules) return null;
+
+    const app = resolveApp(modules.appModule);
+    const messaging = modules.messagingModule.getMessaging(app);
+    const token = await modules.messagingModule.getToken(messaging, {
       vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
     });
 
@@ -30,11 +66,15 @@ export async function requestNotificationPermission(): Promise<string | null> {
   }
 }
 
-export function onForegroundMessage(callback: (payload: unknown) => void) {
-  try {
-    const messaging = getMessaging(app);
-    return onMessage(messaging, callback);
-  } catch {
-    return () => {};
-  }
+export function onForegroundMessage(callback: (payload: unknown) => void): Unsubscribe {
+  let unsubscribe: Unsubscribe = () => {};
+
+  loadFirebaseModules().then((modules) => {
+    if (!modules) return;
+    const app = resolveApp(modules.appModule);
+    const messaging = modules.messagingModule.getMessaging(app);
+    unsubscribe = modules.messagingModule.onMessage(messaging, callback);
+  });
+
+  return () => unsubscribe();
 }

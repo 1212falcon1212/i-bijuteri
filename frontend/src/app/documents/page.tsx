@@ -72,7 +72,7 @@ export default function DocumentsPage() {
         if (user) {
             loadDocuments();
         }
-    }, [user, authLoading]);
+    }, [user, authLoading, router]);
 
     const loadDocuments = async () => {
         try {
@@ -83,8 +83,8 @@ export default function DocumentsPage() {
                 setAllApproved(response.data.all_approved);
                 setMissingTypes(response.data.missing_types);
             }
-        } catch (error) {
-            console.error("Failed to load documents:", error);
+        } catch {
+            console.error("Failed to load documents");
             toast.error("Belgeler yüklenirken hata oluştu");
         } finally {
             setLoading(false);
@@ -117,7 +117,7 @@ export default function DocumentsPage() {
             } else {
                 toast.error(response.error || "Belge yüklenirken hata oluştu");
             }
-        } catch (error) {
+        } catch {
             toast.error("Belge yüklenirken hata oluştu");
         } finally {
             setUploading(false);
@@ -136,7 +136,7 @@ export default function DocumentsPage() {
                 toast.success("Belge silindi");
                 loadDocuments();
             }
-        } catch (error) {
+        } catch {
             toast.error("Belge silinirken hata oluştu");
         }
     };
@@ -162,7 +162,7 @@ export default function DocumentsPage() {
             } else {
                 toast.error(response.error || "Sözleşme indirilemedi");
             }
-        } catch (error) {
+        } catch {
             toast.error("Sözleşme indirilemedi");
         }
     };
@@ -191,7 +191,7 @@ export default function DocumentsPage() {
             } else {
                 toast.error("Sözleşme yüklenirken hata oluştu");
             }
-        } catch (error) {
+        } catch {
             toast.error("Sözleşme yüklenirken hata oluştu");
         } finally {
             setContractUploading(false);

@@ -30,9 +30,7 @@ import {
     Box,
     Filter,
     X,
-    ChevronRight,
     SlidersHorizontal,
-    Grid3X3,
 } from 'lucide-react';
 
 interface Filters {

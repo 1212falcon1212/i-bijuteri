@@ -7,14 +7,10 @@ import {
     Sparkles,
     Box,
     ArrowLeft,
-    Filter,
     ChevronDown,
     X,
     SlidersHorizontal,
-    Calendar,
-    Star,
-    ArrowRight,
-    Clock
+    Calendar
 } from 'lucide-react';
 import { productsApi, categoriesApi, Product, Category } from '@/lib/api';
 import { Button } from '@/components/ui/button';
@@ -33,6 +29,13 @@ import {
 interface NewProduct extends Product {
     added_at?: string;
     days_since_added?: number;
+}
+
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+const REFERENCE_NOW = Date.UTC(2026, 4, 18);
+
+function stableDaysAgo(seed: number): number {
+    return Math.abs(seed * 1103515245 + 12345) % 30;
 }
 
 // Helper function to format date
@@ -58,9 +61,9 @@ function NewProductCard({ product, index }: { product: NewProduct; index: number
         }).format(price);
     };
 
-    // Mock added date if not present (within last 30 days)
-    const addedAt = product.added_at || new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString();
-    const daysSinceAdded = product.days_since_added ?? Math.floor((Date.now() - new Date(addedAt).getTime()) / (1000 * 60 * 60 * 24));
+    const productSeed = Number(product.id) || index + 1;
+    const addedAt = product.added_at || new Date(REFERENCE_NOW - stableDaysAgo(productSeed) * MS_PER_DAY).toISOString();
+    const daysSinceAdded = product.days_since_added ?? Math.floor((REFERENCE_NOW - new Date(addedAt).getTime()) / MS_PER_DAY);
     const isVeryNew = daysSinceAdded <= 3;
 
     return (

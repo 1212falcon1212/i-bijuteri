@@ -5,13 +5,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Tag,
-    Percent,
-    Clock,
-    Filter,
-    Box,
     ArrowLeft,
-    Flame,
-    Zap,
     ChevronDown,
     X,
     SlidersHorizontal
@@ -20,7 +14,6 @@ import { productsApi, categoriesApi, Product, Category } from '@/lib/api';
 import { ProductCard } from '@/components/market/ProductCard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
     Select,
@@ -35,168 +28,6 @@ interface DealProduct extends Product {
     original_price?: number;
     discount_percentage?: number;
     deal_ends_at?: string;
-}
-
-// Countdown timer hook
-function useCountdown(targetDate: string | undefined) {
-    const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-
-    useEffect(() => {
-        if (!targetDate) return;
-
-        const calculateTimeLeft = () => {
-            const difference = new Date(targetDate).getTime() - new Date().getTime();
-
-            if (difference <= 0) {
-                return { days: 0, hours: 0, minutes: 0, seconds: 0 };
-            }
-
-            return {
-                days: Math.floor(difference / (1000 * 60 * 60 * 24)),
-                hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
-                minutes: Math.floor((difference / 1000 / 60) % 60),
-                seconds: Math.floor((difference / 1000) % 60),
-            };
-        };
-
-        setTimeLeft(calculateTimeLeft());
-        const timer = setInterval(() => setTimeLeft(calculateTimeLeft()), 1000);
-
-        return () => clearInterval(timer);
-    }, [targetDate]);
-
-    return timeLeft;
-}
-
-// Countdown Timer Component
-function CountdownTimer({ targetDate }: { targetDate: string }) {
-    const { days, hours, minutes, seconds } = useCountdown(targetDate);
-
-    return (
-        <div className="flex items-center gap-1 text-xs">
-            <Clock className="w-3 h-3 text-red-500" />
-            <div className="flex gap-1">
-                {days > 0 && (
-                    <span className="bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 px-1.5 py-0.5 rounded font-mono font-bold">
-                        {days}g
-                    </span>
-                )}
-                <span className="bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 px-1.5 py-0.5 rounded font-mono font-bold">
-                    {String(hours).padStart(2, '0')}
-                </span>
-                <span className="text-red-500">:</span>
-                <span className="bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 px-1.5 py-0.5 rounded font-mono font-bold">
-                    {String(minutes).padStart(2, '0')}
-                </span>
-                <span className="text-red-500">:</span>
-                <span className="bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 px-1.5 py-0.5 rounded font-mono font-bold">
-                    {String(seconds).padStart(2, '0')}
-                </span>
-            </div>
-        </div>
-    );
-}
-
-// Deal Card Component
-function DealCard({ product, index }: { product: DealProduct; index: number }) {
-    const formatPrice = (price: number) => {
-        return new Intl.NumberFormat('tr-TR', {
-            style: 'currency',
-            currency: 'TRY',
-        }).format(price);
-    };
-
-    // Mock discount data if not present
-    const discountPercentage = product.discount_percentage || Math.floor(Math.random() * 30) + 10;
-    const originalPrice = product.original_price || (product.lowest_price ? product.lowest_price * (1 + discountPercentage / 100) : 0);
-    const dealEndsAt = product.deal_ends_at || new Date(Date.now() + (Math.random() * 7 + 1) * 24 * 60 * 60 * 1000).toISOString();
-
-    return (
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.05, duration: 0.3 }}
-        >
-            <Link href={`/market/product/${product.id}`}>
-                <Card className="group relative border-card-border dark:border-slate-800 hover:shadow-md dark:hover:shadow-[#B89968]/5 transition-all duration-300 cursor-pointer overflow-hidden h-full">
-                    {/* Discount Badge */}
-                    <div className="absolute top-3 left-3 z-10">
-                        <Badge className="bg-gradient-to-r from-red-500 to-[#B89968] text-white border-0 shadow-lg shadow-red-500/30 font-bold text-sm px-2.5 py-1">
-                            <Percent className="w-3 h-3 mr-1" />
-                            {discountPercentage}% indirim
-                        </Badge>
-                    </div>
-
-                    {/* Hot Deal Indicator */}
-                    {discountPercentage >= 25 && (
-                        <div className="absolute top-3 right-3 z-10">
-                            <div className="bg-gradient-to-r from-[#B89968] to-amber-500 text-white rounded-full p-1.5 shadow-lg shadow-[#B89968]/30 ">
-                                <Flame className="w-4 h-4" />
-                            </div>
-                        </div>
-                    )}
-
-                    <CardContent className="p-0">
-                        {/* Image */}
-                        <div className="relative aspect-square bg-white dark:bg-charcoal flex items-center justify-center overflow-hidden">
-                            {(product.image_url || product.image) ? (
-                                <img
-                                    src={product.image_url || product.image}
-                                    alt={product.name}
-                                    className="w-full h-full object-contain p-4 group-hover:scale-110 transition-transform duration-500"
-                                />
-                            ) : (
-                                <Box className="w-20 h-20 text-charcoal-light dark:text-charcoal-mid" />
-                            )}
-
-                            {/* Overlay on hover */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-[#F1E6D0]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                        </div>
-
-                        {/* Content */}
-                        <div className="p-4 space-y-3">
-                            {/* Countdown Timer */}
-                            <div className="flex items-center justify-between">
-                                <CountdownTimer targetDate={dealEndsAt} />
-                                {Number(product.offers_count) > 0 && (
-                                    <span className="text-xs text-charcoal-light dark:text-charcoal-light">
-                                        {product.offers_count} satıcı
-                                    </span>
-                                )}
-                            </div>
-
-                            {/* Brand */}
-                            {product.brand && (
-                                <p className="text-xs font-semibold text-[#B89968] dark:text-[#D4B896] uppercase tracking-wider">
-                                    {product.brand}
-                                </p>
-                            )}
-
-                            {/* Name */}
-                            <h3 className="font-bold text-charcoal dark:text-white group-hover:text-[#B89968] dark:group-hover:text-[#B89968] line-clamp-2 min-h-[2.5rem] transition-colors">
-                                {product.name}
-                            </h3>
-
-                            {/* Price Section */}
-                            <div className="pt-2 border-t border-card-border dark:border-slate-800">
-                                <div className="flex items-baseline gap-2">
-                                    <span className="text-xl font-bold text-[#B89968] dark:text-[#D4B896]">
-                                        {formatPrice(product.lowest_price || 0)}
-                                    </span>
-                                    <span className="text-sm text-charcoal-light line-through">
-                                        {formatPrice(originalPrice)}
-                                    </span>
-                                </div>
-                                <p className="text-xs text-[#B89968] dark:text-[#D4B896] font-medium mt-1">
-                                    {formatPrice(originalPrice - (product.lowest_price || 0))} tasarruf
-                                </p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-            </Link>
-        </motion.div>
-    );
 }
 
 // Loading Skeleton

@@ -19,7 +19,7 @@ class WalletServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->walletService = new WalletService();
+        $this->walletService = new WalletService;
     }
 
     /**
@@ -488,7 +488,7 @@ class WalletServiceTest extends TestCase
     public function test_wallet_belongs_to_seller(): void
     {
         $seller = User::factory()->seller()->create([
-            'pharmacy_name' => 'Test Eczanesi',
+            'business_name' => 'Test Bijuteri',
         ]);
 
         $wallet = SellerWallet::create([
@@ -501,7 +501,7 @@ class WalletServiceTest extends TestCase
         ]);
 
         $this->assertInstanceOf(User::class, $wallet->seller);
-        $this->assertEquals('Test Eczanesi', $wallet->seller->pharmacy_name);
+        $this->assertEquals('Test Bijuteri', $wallet->seller->business_name);
     }
 
     /**

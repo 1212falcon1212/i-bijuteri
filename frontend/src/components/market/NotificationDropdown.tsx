@@ -17,7 +17,6 @@ import {
   ClipboardCheck,
   AlertTriangle,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useNotificationStore } from "@/stores/useNotificationStore";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";

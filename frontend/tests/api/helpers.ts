@@ -2,13 +2,11 @@ const BASE_URL = process.env.API_BASE_URL || 'http://localhost:8004/api';
 
 let passCount = 0;
 let failCount = 0;
-let skipCount = 0;
 let currentSuite = '';
 const errors: { suite: string; test: string; error: string }[] = [];
 
 const GREEN = '\x1b[32m';
 const RED = '\x1b[31m';
-const YELLOW = '\x1b[33m';
 const CYAN = '\x1b[36m';
 const DIM = '\x1b[2m';
 const BOLD = '\x1b[1m';
